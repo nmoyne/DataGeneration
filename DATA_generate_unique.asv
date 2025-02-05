@@ -1,0 +1,33 @@
+% Define the gray level (0 to 255 for uint8, 0 to 1 for double)
+R1 = 128;  % Adjust this value for different shades of gray
+R2 = 64;
+
+l_pict = 15e-2;
+l_scat = 5e-2;
+
+ImgSize = 256;
+
+% Create the uniform gray image
+I1 = uint8(ones(imgSize, imgSize) * R1);
+I2 = uint8(ones(imgSize, imgSize) * R2);
+
+% A convex array
+param = getparam("C5-2v");
+
+% Create 2D distribution of scatterer
+[xs1,~,zs1,RC1] = genscat([NaN l_pict],param,I1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

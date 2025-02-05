@@ -1,0 +1,87 @@
+R = 128;
+M1 = 8e-4;
+M2 = 1e-;
+l_pict = 15e-2;
+l_scat = 2e-2;
+x_lim = -2e-2;
+z_lim = 5e-2;
+
+fprintf("Begin")
+
+[xs, zs, RC] = generateScatterers(R, M1, M2, l_pict, l_scat, x_lim, z_lim);
+
+figure;
+scatter(xs*1e2,zs*1e2,2,RC,'filled')
+colormap([hot; 1-hot])
+axis equal ij tight
+set(gca,'XColor','none','box','off')
+title([int2str(numel(RC)) ' scatterers'])
+ylabel('[cm]')
+
+
+% A convex array (Assuming getparam is a valid function)
+param = getparam("C5-2v");
+
+% Création des faisceaux (sub-array de 32 éléments)
+param_suba = param;
+
+tkdel = cell(20, 1);
+
+for k = 1:20
+    zf = l_pict/2;
+    xf = (k - 10)/10*l_pict/2; % in s;
+    txdel{k} = txdelay(xf,zf,param_suba); % in s
+end
+
+
+% Simulation du signal RF
+RF = cell(20,1); % this cell will contain the RF series
+param.fs = 4*param.fc; % sampling frequency in Hz
+
+% RF(k) : Arr(128) containing the 128RF signals for beam k
+option.WaitBar = false;
+h = waitbar(0,'');
+for k = 1:20
+    waitbar(k/20,h,['RF series #' int2str(k) ' of 20'])
+    RF{k} = simus(xs,zs,RC,txdel{k},param, option); 
+end
+close(h)
+
+% IQ demodulation
+IQ = cell(20,1);  % this cell will contain the I/Q series
+
+for k = 1:20
+    IQ{k} = rf2iq(RF{k},param.fs,param.fc);
+end
+
+
+% Formation des voies 
+param.fnumber = [];
+[xi,zi] = impolgrid([256 256],l_pict,param);
+
+bIQ = zeros(256,256,20);  % this array will contain the 50 images
+
+h = waitbar(0,'');
+for k = 1:20
+    waitbar(k/20,h,['DAS: I/Q series #' int2str(k) ' of 20'])
+    bIQ(:,:,k) = das(IQ{k},xi,zi,txdel{k},param);
+end
+close(h)
+
+% Formation de l'image en BMODE
+I = bmode(bIQ(:,:,1),40); % log-compressed image
+
+figure;
+pcolor(xi*100,zi*100,I)
+c = colorbar;
+c.YTick = [0 255];
+c.YTickLabel = {'-30 dB','0 dB'};
+colormap gray
+title('A simulated ultrasound image')
+ylabel('[cm]')
+shading interp
+axis equal ij tight
+set(gca,'XColor','none','box','off')
+
+
+

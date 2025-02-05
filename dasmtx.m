@@ -481,7 +481,7 @@ else
         [~,idx] = min(Dn,[],2);
 
         InterpMethod = 'parabolic';
-        % InterpMethod = 'nearest';
+        InterpMethod = 'nearest';
         switch InterpMethod
             case 'nearest'
                 dTX = hypot(xv(idx)'-x,zv(idx)'-z);

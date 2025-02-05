@@ -1,0 +1,122 @@
+% This script will generate 256 datapoints
+% A rectangle of scatterers with a random M (in [1, 5]e-3)
+% Between 1 and 3 circles with random centers, radius, and M perturbation between
+% [1, 5]e-4 and 
+% Final image saved as jpeg and terrain truth as json
+
+l_pict = 15e-2;
+R = 128;
+
+% Rectangle with x in [-7.5e-2, 7.5e-2] and z in [0, 15e-2]
+rectangle = @(x, z) (x >= -l_pict/2 & x <= l_pict/2) & (z >= 0 & z <= l_pict);
+
+parfor k = 1:16
+   for j = 1:16
+       M1 = rand()*4e-3 + 1e-3;
+       n = randi([1, 3])
+       switch n   
+           case 1
+               x1 = (rand() - 0.5)*l_pict;
+               z1 = rand()*l_pict
+               r = rand()*3e-2
+
+               circle1 = @(x, z) ((x - x1)^2 + (z - z1)^2) <= r.^2;
+
+               % Rectangle without the circles
+               rectangleEmpty = @(x, y) rectangle(x, y) & ~circle1(x,y);
+
+               func_list = {rectangleEmpty, circle1};
+               m_list = [M1, M1 + (rand() - 0.5)*10e-4]
+
+               
+           case 2
+               % Case 2: Two Circles
+               x1 = (rand() - 0.5)*l_pict;
+               z1 = rand()*l_pict
+               r = rand()*3e-2
+
+               circle1 = @(x, z) ((x - x1)^2 + (z - z1)^2) <= r.^2;
+
+               x2 = (rand() - 0.5) * l_pict;
+               z2 = rand() * l_pict;
+               r2 = rand() * 3e-2;
+                
+               circle2 = @(x, z) ((x - x2)^2 + (z - z2)^2) <= r2.^2;
+                
+               rectangleEmpty = @(x, z) rectangle(x, z) & ~circle1(x, z) & ~circle2(x, z);
+
+               func_list = {rectangleEmpty, circle1, circle2};
+               m_list = [M1, M1 + (rand() - 0.5)*10e-4, M1 + (rand() - 0.5)*10e-4]
+           
+           case 3
+               x1 = (rand() - 0.5)*l_pict;
+               z1 = rand()*l_pict
+               r = rand()*3e-2
+
+               circle1 = @(x, z) ((x - x1)^2 + (z - z1)^2) <= r.^2;
+
+               x2 = (rand() - 0.5) * l_pict;
+               z2 = rand() * l_pict;
+               r2 = rand() * 3e-2;
+                
+               circle2 = @(x, z) ((x - x2)^2 + (z - z2)^2) <= r2.^2;
+
+               x3 = (rand() - 0.5) * l_pict;
+               z3 = rand() * l_pict;
+               r3 = rand() * 3e-2;
+                
+               circle3 = @(x, z) ((x - x3)^2 + (z - z3)^2) <= r3.^2;
+                
+               rectangleEmpty = @(x, z) rectangle(x, z) & ~circle1(x, z) & ~circle2(x, z) & ~circle3(x, z);
+
+               func_list = {rectangleEmpty, circle1, circle2, circle3};
+               m_list = [M1, M1 + (rand() - 0.5)*10e-4, M1 + (rand() - 0.5)*10e-4, M1 + (rand() - 0.5)*10e-4]
+
+       end
+       I = uint8(ones(256, 256) * R);
+       [xs, zs, RC] = fieldScatterers(func_list, m_list, l_pict, I);
+
+
+   end  
+end
+
+
+% Define parameters
+
+M1 = 4e-3;
+M2 = 1e-3;
+
+l_scat = 2e-2;
+x_lim = -2e-2;
+z_lim = 5e-2;
+
+% Generate scatterers
+
+% Circle centered at (0, 4e-2) with radius 1
+circle1 = @(x, z) (x.^2 + (z - 4e-2).^2) <= (1e-2)^2;
+
+% Circle centered at (3e-2, 6e-2) with radius 1
+circle2 = @(x, z) ((x - 3e-2).^2 + (z - 6e-2).^2) <= (1e-2)^2;
+
+% Circle centered at (-3e-2, 6e-2) with radius 1
+circle3 = @(x, z) ((x + 3e-2).^2 + (z - 6e-2).^2) <= (1e-2)^2;
+
+% Rectangle with x in [-7.5e-2, 7.5e-2] and z in [0, 15e-2]
+rectangle = @(x, z) (x >= -7.5e-2 & x <= 7.5e-2) & (z >= 0 & z <= 15e-2);
+
+% Rectangle without the circles
+rectangleEmpty = @(x, y) rectangle(x, y) ...
+& ~circle3(x,y) ...
+& ~circle2(x,y) ...
+& ~circle1(x,y);
+
+
+func_list = {rectangleEmpty, circle2, circle3};
+m_list = [4, 1, 1]*1e-3;
+I = uint8(ones(256, 256) * R);
+
+[xs, zs, RC] = fieldScatterers(func_list, m_list, l_pict, I);
+
+% Call the function to generate the ultrasound image
+[xi, zi, I] = buildPicture(l_pict, xs, zs, RC);
+
