@@ -34,11 +34,8 @@ func_list = {rectangleEmpty, circle2, circle3};
 m_list = [4, 1, 1]*1e-3;
 I = uint8(ones(256, 256) * R);
 
-%[xs, zs, RC] = fieldScatterers(func_list, m_list, l_pict, I);
+[xs, zs, RC] = fieldScatterers(func_list, m_list, l_pict, I);
 
-I = imread('heart.jpg');
-I = rgb2gray(I);
-[xs,~,zs,RC] = genscat([NaN 15e-2],param,I);
 
 figure;
 scatter(xs*1e2,zs*1e2,20,RC,'filled')

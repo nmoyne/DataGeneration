@@ -393,22 +393,6 @@ end
 if ~onppool && ~strcmp(MyUserName,getenv('username'))
     if isempty(pfieldLastUse) || (datetime('now')-pfieldLastUse)>1
         pfieldLastUse = datetime('now');
-        
-        % An ad appears once a day (once PFIELD is used) in a small message
-        % box. Please do not remove it!
-        AdMessage
-
-        % A warning message appears if one of the functions is outdated
-        try checkUpdate, catch, end
-        
-        % -- Statistics on daily use -- The number of uses is incremented
-        % daily, and the information is sent in an FTP file for statistical
-        % purpose. Don't worry, there is no spam! The MUSTstat file is
-        % encrypted (p code) because it contains a password. Please do not
-        % remove it!
-        % p = fileparts(mfilename('fullpath'));
-        % try MUSTstat(p), catch, end
-
     end
 end
 
@@ -1301,75 +1285,3 @@ end
 
 end
 
-
-function AdMessage
-opts.Interpreter = 'tex';
-opts.Default = 'Donate';
-quest = {'\fontsize{9}MUST is an open-source toolbox for research purposes.',...
-    'Is \fontsize{9}MUST useful for your research? If yes',...
-    '---',...
-    '\bullet \bf{please cite our articles!} \bullet',...
-    '\rm{}Enter "\bf{cite}\rm" in the Command Window for a list.',...
-    '---',...
-    '\bullet \bf{consider a small donation through PayPal} \bullet',...
-    '\rm{}to keep MUST up-to-date.',...
-    '---','',...
-    'MUST \copyright 2020 Damien Garcia',...
-    'LGPL-3.0-or-later','',...
-    '\bf{garcia.damien@gmail.com}',...
-    '\color[rgb]{0,0.5,0.5}\bullet \bf{www.biomecardio.com} \bullet',''};
-answer =  questdlg(quest,...
-    'MUST',...
-    'Donate','Cite','I''ll do it tomorrow',opts);
-
-switch answer
-    case 'Donate'
-        web('https://www.paypal.com/donate?hosted_button_id=RSTWXQTH5X3C6')
-    case 'Cite'
-        cite
-    case 'I''ll do it tomorrow'
-        try
-            [icondata,iconcmap] =...
-                imread('https://www.biomecardio.com/images/MUSTicon.jpg');
-        catch
-            icondata = ind2rgb(round(255*rescale(peaks(100))+1),...
-                [1-hot(128); hot(128)]);
-            iconcmap = [];
-        end
-        msgboxStruct.Interpreter = 'tex';
-        msgboxStruct.WindowStyle = 'modal';
-        wm = msgbox({'\bf{Enjoy MUST!}','\rm{See you tomorrow!}'},...
-            'MUST','custom',icondata,iconcmap,msgboxStruct);
-        uiwait(wm,3);
-        if ishandle(wm), close(wm), end
-end
-end
-
-
-function checkUpdate
-
-% update according to the website
-tmp = webread('https://www.biomecardio.com/MUST/index.html');
-last_update = regexp(tmp,'\d\d\d\d/\d\d/\d\d','match','once');
-last_update = datetime(last_update,'InputFormat','yyyy/MM/dd');
-
-% update according to the .m files
-dirname = fileparts(which('pfield'));
-mlist = cellstr(ls([dirname '\*.m']));
-for k = 1:length(mlist)
-    tmpdate = regexp(fileread(mlist{k}),...
-        '\d\d\d\d/\d\d/\d\d','match','once');
-    if isempty(tmpdate), continue, end
-    tmpdate = datetime(tmpdate,'InputFormat','yyyy/MM/dd');
-    isupdated = tmpdate>=last_update;
-    if isupdated, return, end
-end
-
-opts = struct('WindowStyle','modal','Interpreter','tex');
-wf = warndlg({'\bf{}Your MUST toolbox is outdated.',...
-    '\rm\color{red}\bullet Consider an upgrade \bullet'},...
-    'Out-Of-Date',opts);
-uiwait(wf,10);
-if ishandle(wf), close(wf), end
-
-end

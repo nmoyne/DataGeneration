@@ -19,6 +19,8 @@ rectangle = @(x, z) (x >= -l_pict/2 & x <= l_pict/2) & (z >= 0 & z <= l_pict);
 % Pre-allocate a cell array to store results
 temp_data = cell(16, 16);
 
+parpool("Threads")
+
 parfor k = 1:64
     for j = 1:16 
         M1 = rand() * 4e-3 + 1e-3;
