@@ -12,8 +12,6 @@ function [xi, zi, I] = buildPicture(l_pict, xs, zs, RC)
 
     txdel_suba = txdelay(xf, zf, param_suba);
 
-    
-
     % Simulation du signal RF
 
     RF = cell(13,1); % Stackage des RF
@@ -58,7 +56,7 @@ function [xi, zi, I] = buildPicture(l_pict, xs, zs, RC)
     %close(h)
 
     % Time Gain compensation
-    %bIQ = tgc(bIQ);
+    bIQ = tgc(bIQ);
     
     % Formation de l'image en BMODE par somme des images
     bIQ_sum = sum(bIQ, 3);
