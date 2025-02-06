@@ -51,7 +51,10 @@ function [xi, zi, I] = buildPicture(l_pict, xs, zs, RC)
     %h = waitbar(0,'Démodulation DAS');
     for k = 1:numel(IQ)
         %waitbar(k/numel(IQ),h,['DAS: I/Q series #' int2str(k)])
-        bIQ(:,:,k) = das(IQ{k},xi,zi,txdel{k},param);
+        i_min = 8*(k - 1);
+        valid_indices = (1:32)+i_min;
+        %waitbar(k/numel(IQ),h,['DAS: I/Q series #' int2str(k)])
+        bIQ(valid_indices,:,k) = das(IQ{k},xi(valid_indices,:),zi(valid_indices,:),txdel{k},param);
     end
     %close(h)
 
@@ -61,3 +64,4 @@ function [xi, zi, I] = buildPicture(l_pict, xs, zs, RC)
     % Formation de l'image en BMODE par somme des images
     bIQ_sum = sum(bIQ, 3);
     I = bmode(bIQ_sum(:,:,1),40); % log-compressed image
+

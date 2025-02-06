@@ -9,7 +9,7 @@ z_lim = 5e-2;
 
 % Generate scatterers
 %[xs, zs, RC] = generateScatterers(R, M1, M2, l_pict, l_scat, x_lim, z_lim);
-%[xs, zs, RC] = specialScatterers("line", R, l_pict);
+[xs, zs, RC] = specialScatterers("one", R, l_pict);
 
 % Circle centered at (0, 4e-2) with radius 1
 circle1 = @(x, z) (x.^2 + (z - 4e-2).^2) <= (1e-2)^2;
@@ -34,7 +34,7 @@ func_list = {rectangleEmpty, circle2, circle3};
 m_list = [4, 1, 1]*1e-3;
 I = uint8(ones(256, 256) * R);
 
-[xs, zs, RC] = fieldScatterers(func_list, m_list, l_pict, I);
+%[xs, zs, RC] = fieldScatterers(func_list, m_list, l_pict, I);
 
 
 figure;
@@ -46,7 +46,7 @@ title([int2str(numel(RC)) ' scatterers'])
 ylabel('[cm]')
 
 % Call the function to generate the ultrasound image
-[xi, zi, I] = buildPicture(l_pict, xs, zs, RC);
+[xi, zi, I] = focusedBuildPicture(l_pict, xs, zs, RC);
 
 % Display the final B-mode image
 figure;
